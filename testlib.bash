@@ -1,9 +1,9 @@
 #!/bin/bash
 
 # initial impl of: https://docs.google.com/document/d/1kNx69oxUKsQ3ZhhUIBiRBKWJlfouZ5ZVSdYGlBPjuAk/
-# there are two superimportant control variables
-# TTL - if empty or 0, it is considered to be manual run, otherwise it is amount of secconds to wait for gui app to start
-# DISPALY - linux only, if set, then it is used. If not, vncserver is isntalled and launched on hardcoded sueprport
+# there are two very important control variables
+# TTL - if empty or 0, it is considered to be manual run, otherwise it is amount of seconds to wait for gui app to start
+# DISPLAY - linux only, if set, then it is used. If not, VNC server is installed and launched on hardcoded support
 
 set -ex
 set -o pipefail
@@ -22,9 +22,8 @@ while [ -h "$SCRIPT_SOURCE" ]; do # resolve $SOURCE until the file is no longer 
 done
 readonly LIB_SCRIPT_DIR="$( cd -P "$( dirname "$SCRIPT_SOURCE" )" && pwd )"
 
-SKIPPED_ITW20="!skipped! ITW 2.0 do not have bianry releases !skipped!"
+SKIPPED_ITW20="!skipped! ITW 2.0 do not have binary releases !skipped!"
 SKIPPED_MSI_LINUX="!skipped! no testing of msi on linux !skipped!"
-SKIPPED_itw7_jdk11="!skipped! itw 1.7 seems to support jdk11 but is.. well old !skipped!"
 SKIPPED_itw_jdk16="!skipped! itw 1.7 seems to support jdk11 but is.. well old !skipped!"
 SKIPPED_jdk_needed="!skipped! this test requires jdk, you are most likely on jre(-headless) !skipped!"
 SKIPPED_jdk11_sdk="!skipped! On JDK11+, netbeans requires JDK, this looks to be JRE !skipped!"
@@ -36,6 +35,7 @@ function skipOnModularJre() {
     local OTOOL_JDK_VERSION=6
   fi
   if [  $OTOOL_JDK_VERSION -ge 11 ]  ; then
+    # shellcheck disable=SC2166
     if [  "$OTOOL_jresdk" ==  "jre" -o  "$OTOOL_jresdk" ==  "jre~headless" ]  ; then
       echo "$SKIPPED_jdk11_sdk"
       exit 0
@@ -124,35 +124,36 @@ function dnfyum() {
   else
     return 1
   fi
-  ls -l $JVMDIR
+  ls -l "$JVMDIR"
   resetAlternatives
-  ls -l $JVMDIR
+  ls -l "$JVMDIR"
 }
 
 function resetAlternatives() {
   # from commons, as is JVMDIR
-  createMainFakeAlternatives ${ORIGINAL_EXPANDED_JDK}
+  createMainFakeAlternatives "${ORIGINAL_EXPANDED_JDK}"
 }
 
 function dednfyum() {
   # plain remove pulls in also weird javas
   # thus removing also the,
-  # and restoring alternatives as in installRpms
+  # and restoring alternatives as in install rpms
   if which dnf ; then
-    sudo  dnf history info 0 | grep ${1}
+    sudo  dnf history info 0 | grep "${1}"
     sudo  dnf history undo 0 -y --skip-broken
     sudo  dnf remove -y "$@" || true # to double check the evil...
   elif which yum ; then
-    local lastTrasn=$(sudo yum history  | grep ID -A 2 | tail -n 1 | sed "s/|.*//" | sed "s/\s\+//")
-    sudo  yum history info $lastTrasn | grep ${1}
-    sudo  yum history undo $lastTrasn -y --skip-broken
+    # shellcheck disable=SC2155
+    local lastTrans=$(sudo yum history  | grep ID -A 2 | tail -n 1 | sed "s/|.*//" | sed "s/\s\+//")
+    sudo  yum history info "$lastTrans" | grep "${1}"
+    sudo  yum history undo "$lastTrans" -y --skip-broken
     sudo  yum remove -y "$@" || true # to double check the evil...
   else
     return 1
   fi
-  ls -l $JVMDIR
+  ls -l "$JVMDIR"
   resetAlternatives
-  ls -l $JVMDIR
+  ls -l "$JVMDIR"
 }
 
 
@@ -170,12 +171,13 @@ function installImageMagick() {
 }
 
 LOCAL_VNC=unsetVnc
-LOCAL_VNCPASS=unset
+# shellcheck disable=SC2209
+LOCAL_VNC_PASS=unset
 function installVnc() {
-  # I have failed to reasonably safly run non-systemd vncserver via vncsession
-  # falligng down to downloaded vncserver
+  # I have failed to reasonably safely run non-systemd vncserver via vncsession
+  # falling down to downloaded vncserver
   LOCAL_VNC_VERSION=tigervnc-1.10.0.x86_64
-  VNC_FILE=`mktemp`
+  VNC_FILE=$(mktemp)
   if [ ! -e $LOCAL_VNC_VERSION ] ; then
     if [ ! -e $LOCAL_VNC_VERSION.tar.gz ] ; then
       #wget https://bintray.com/tigervnc/stable/download_file?file_path=$LOCAL_VNC_VERSION.tar.gz -O $LOCAL_VNC_VERSION.tar.gz
@@ -184,9 +186,10 @@ function installVnc() {
     tar -xf $LOCAL_VNC_VERSION.tar.gz
   fi
   LOCAL_VNC=$PWD/$LOCAL_VNC_VERSION/usr/bin/vncserver
-  LOCAL_VNCPASS=$PWD/$LOCAL_VNC_VERSION/usr/bin/vncpasswd
+  LOCAL_VNC_PASS=$PWD/$LOCAL_VNC_VERSION/usr/bin/vncpasswd
 }
 
+# shellcheck disable=SC2166
 if [ "x$TTL" = "x" -o "x$TTL" = "x0"  ] ; then
   ITW_HEADLESS=
 else
@@ -195,15 +198,16 @@ fi
 
 function beforeBg() {
   name=$1
+  # shellcheck disable=SC2166
   if [ "x$TTL" = "x" -o "x$TTL" = "x0"  ] ; then
     echo "manual mode!"
   else
-    import  -window root $REPORT_DIR/diff-01.png
+    import  -window root "$REPORT_DIR"/diff-01.png
   fi
 }
 
 getDescendants() (
-  dpids="$( pgrep -P $1 )"
+  dpids="$( pgrep -P "$1" )"
   echo "${dpids}"
   for dpid in $dpids ; do
     getDescendants "${dpid}"
@@ -216,35 +220,36 @@ function resolveBg() {
   cname="diff"
   sleep 1
   echo "If this fails, it means that process have not even started"
-  ps | grep $pid # to die if process do nto start
+  ps | grep "$pid" # to die if process do nto start
+  # shellcheck disable=SC2166
   if [ "x$TTL" = "x" -o "x$TTL" = "x0"  ] ; then
-    wait $pid
+    wait "$pid"
   else
-    sleep $TTL
-    import  -window root $REPORT_DIR/$cname-02.png
+    sleep "$TTL"
+    import  -window root "$REPORT_DIR"/$cname-02.png
     ps
     #pstree
     cpids="$( getDescendants "$pid" )"|| true  # gets pids of descendant processes
     echo "If this fails, it means that process have crashed (or have not started and grep above failed)"
-    kill -9 $pid
+    kill -9 "$pid"
     if [ ! "x$cpids" = "x" ] ; then
-      for cpid in $cpids ; do kill -9 $cpid ; done
+      for cpid in $cpids ; do kill -9 "$cpid" ; done
     fi
     sleep 1
-    import  -window root $REPORT_DIR/$cname-03.png
+    import  -window root "$REPORT_DIR"/$cname-03.png
     if [ "$DIFF" == "true" ] ; then
-      d12=`compareImagesSilently $cname 01 02`
-      d23=`compareImagesSilently $cname 02 03`
-      d13=`compareImagesSilently $cname 01 03 03-01`
-      if [ $d12 -gt 15 ] ; then
+      d12=$(compareImagesSilently $cname 01 02)
+      d23=$(compareImagesSilently $cname 02 03)
+      d13=$(compareImagesSilently $cname 01 03 03-01)
+      if [ "$d12" -gt 15 ] ; then
         echo "error! images 1+2 are same, should be not"
         exit 1
       fi
-      if [ $d23 -gt 15 ] ; then
+      if [ "$d23" -gt 15 ] ; then
         echo "error! images 2+3 are same, should be not"
         exit 1
       fi
-      if [ $d13 -le 15 ] ; then
+      if [ "$d13" -le 15 ] ; then
         echo "warning! images 1+3 are different, should be not"
         # exit 1 # The difference between first and last stage is probably not relevant, and may cause false-negatives
       fi
@@ -256,7 +261,7 @@ function resolveBg() {
 }
 
 function saveVncServerLog() {
-  cp $HOME/.vnc/*954.log $REPORT_DIR/vncserver || true
+  cp "$HOME"/.vnc/*954.log "$REPORT_DIR"/vncserver || true
 }
 
 function compareImagesSilently() {
@@ -268,9 +273,11 @@ function compareImagesSilently() {
   if [ "x$idCompOverride" == "x" ] ; then
     idCompOverride=$id1-$id2
   fi
-  compare  -metric PSNR  $REPORT_DIR/$name-$id1.png $REPORT_DIR/$name-$id2.png $REPORT_DIR/$name-$idCompOverride.png  2> $REPORT_DIR/res-$idCompOverride || r=$?
+  compare  -metric PSNR  "$REPORT_DIR"/"$name"-"$id1".png "$REPORT_DIR"/"$name"-"$id2".png "$REPORT_DIR"/"$name"-"$idCompOverride".png  2> "$REPORT_DIR"/res-"$idCompOverride" || r=$?
   echo "40+ same, 10- different" 1>&2
-  local diff=`cat $REPORT_DIR/res-$idCompOverride | sed "s;\\..*;;"`
+  # shellcheck disable=SC2155
+  # shellcheck disable=SC2002
+  local diff=$(cat "$REPORT_DIR"/res-"$idCompOverride" | sed "s;\\..*;;")
   if [ "$diff" == "inf" ] ; then
     local diff=50 #same
   fi
@@ -280,15 +287,13 @@ function compareImagesSilently() {
 
 ITW_17=icedtea-web-1.7.2
 ITW_DIR=icedtea-web-image
+# shellcheck disable=SC2209
 ITW=unset
 #skip on jdk 11+?
 function installIcedTeaWeb_17_portableArchive() {
-#  if [  $OTOOL_JDK_VERSION -gt 8 ]  ; then
-#    echo "$SKIPPED_itw7_jdk11"
-#    exit 0
-#  fi
   unset ITW_LIBS
   rm -rf $ITW_DIR
+  # shellcheck disable=SC2209
   ITW=unset
   if [ ! -e $ITW_17.portable.bin.zip ] ; then
     wget http://icedtea.wildebeest.org/download/icedtea-web-binaries/1.7.2/$ITW_17.portable.bin.zip
@@ -309,6 +314,7 @@ function installIcedTeaWeb_17_binaryArchive() {
 #  fi
   unset ITW_LIBS
   rm -rf $ITW_DIR
+  # shellcheck disable=SC2209
   ITW=unset
   if [ "x$OTOOL_OS_NAME" = "xwin" ] ; then
     if [ ! -e $ITW_17.win.bin.zip ] ; then
@@ -329,6 +335,7 @@ ITW_18=icedtea-web-1.8.4
 function installIcedTeaWeb_18_portableArchive() {
   unset ITW_LIBS
   rm -rf $ITW_DIR
+  # shellcheck disable=SC2209
   ITW=unset
   if [ ! -e $ITW_18.portable.bin.zip ] ; then
     wget https://github.com/AdoptOpenJDK/IcedTea-Web/releases/download/$ITW_18/$ITW_18.portable.bin.zip
@@ -344,6 +351,7 @@ function installIcedTeaWeb_18_portableArchive() {
 function installIcedTeaWeb_18_binaryArchive() {
   unset ITW_LIBS
   rm -rf $ITW_DIR
+  # shellcheck disable=SC2209
   ITW=unset
   if [ "x$OTOOL_OS_NAME" = "xwin" ] ; then
     if [ ! -e $ITW_18.win.bin.zip ] ; then
@@ -362,7 +370,7 @@ function installIcedTeaWeb_18_binaryArchive() {
 
 
 function installIcedTeaWeb_20_archive() {
- echo $SKIPPED_ITW20
+ echo "$SKIPPED_ITW20"
 }
 
 function installIcedTeaWeb_bundled() {
@@ -383,20 +391,23 @@ function installIcedTeaWeb_bundled() {
 
 # skip on jre
 function createTestClass() {
-  local tmpd=`mktemp -d`
-  $JAVA_DIR/bin/javac -d $tmpd  "${SCRIPT_DIR}/src/swinghello/org/jlink/swingdemo/SwingHello.java"
-  echo $tmpd
+  # shellcheck disable=SC2155
+  local tmpd=$(mktemp -d)
+  "$JAVA_DIR"/bin/javac -d "$tmpd"  "${SCRIPT_DIR}/src/swinghello/org/jlink/swingdemo/SwingHello.java"
+  echo "$tmpd"
 }
 
 # skip on jre
 function createJar() {
+  # shellcheck disable=SC2155
+  # shellcheck disable=SC2006
   local jarDir=`mktemp -d`
   local jarFile="$jarDir/jar.jar"
   local dirWithClass=$1
-  pushd $dirWithClass
-    $JAVA_DIR/bin/jar -cf $jarFile `find .`
+  pushd "$dirWithClass"
+    "$JAVA_DIR"/bin/jar -cf "$jarFile" $(find .)
   popd
-  echo $jarFile
+  echo "$jarFile"
 }
 
 function createJnlp() {
@@ -437,16 +448,16 @@ function signJar() {
   local pass=super_secret
   local jar=$1
   rm -vf $keystore
-  $JAVA_DIR/bin/keytool -genkey -keyalg RSA -alias $tcaw -keystore $keystore -keypass $pass -storepass $pass -dname "cn=$tcaw, ou=$tcaw, o=$tcaw, c=$tcaw"
-  $JAVA_DIR/bin/jarsigner -keystore $keystore -storepass $pass -keypass $pass  $jar  $tcaw
+  "$JAVA_DIR"/bin/keytool -genkey -keyalg RSA -alias $tcaw -keystore $keystore -keypass $pass -storepass $pass -dname "cn=$tcaw, ou=$tcaw, o=$tcaw, c=$tcaw"
+  "$JAVA_DIR"/bin/jarsigner -keystore $keystore -storepass $pass -keypass $pass  "$jar"  $tcaw
   #$JAVA_DIR/bin/jarsigner -verify -verbose -keystore $keystore $jar
   rm -vf $keystore
 
 }
 
 function exitOnJre() {
-  if [ ! -e $JAVA_DIR/bin/javac ] ; then
-    echo $SKIPPED_jdk_needed
+  if [ ! -e "$JAVA_DIR"/bin/javac ] ; then
+    echo "$SKIPPED_jdk_needed"
     exit 0
   fi
 }
@@ -455,17 +466,21 @@ function exitOnJre() {
 function prepareLocalApp() {
   JNLP=none
   exitOnJre
-  local clazz=`createTestClass `
-  local jar=`createJar $clazz | tail -n 1`
+  # shellcheck disable=SC2155
+  local clazz=$(createTestClass )
+  # shellcheck disable=SC2155
+  local jar=$(createJar "$clazz" | tail -n 1)
   local main="org.jlink.swingdemo.SwingHello"
-  local dir=`dirname $jar`
+  # shellcheck disable=SC2155
+  local dir=$(dirname "$jar")
   local jnlp="$dir/app.jnlp"
-  createJnlp $main `basename $jar` `basename $jnlp` $1 > $jnlp
+  # shellcheck disable=SC2094
+  createJnlp $main $(basename "$jar") $(basename "$jnlp") "$1" > "$jnlp"
   if [ "x$1" = "xtrue" ] ; then
-    signJar $jar
+    signJar "$jar"
   fi
   JNLP=$jnlp
-  echo $jnlp
+  echo "$jnlp"
 }
 
 function runRemoteAppFromPath() {
@@ -477,20 +492,20 @@ function runRemoteApp() {
   # runITW $1 $2 https://www.sweethome3d.com/SweetHome3D.jnlp
   # packgz error solemn for 1.8 toto, check rhel rpms
   # runITW $1 $2 https://phetsims.colorado.edu/sims/circuit-construction-kit/circuit-construction-kit-dc_en.jnlp
-  runITW $1 $2  https://josm.openstreetmap.de/download/josm.jnlp
+  runITW "$1" "$2"  https://josm.openstreetmap.de/download/josm.jnlp
 }
 
 
 function runITW() {
   if [  $OTOOL_JDK_VERSION -ge 16 ]  ; then
-    echo $SKIPPED_itw_jdk16
+    echo "$SKIPPED_itw_jdk16"
     return 0
   fi
   export JAVA_HOME=$JAVA_DIR
-  JAVA_HOME=$JAVA_DIR $1 $ITW_HEADLESS -Xclearcache  2>&1 | tee $REPORT_DIR/itwCache
-  beforeBg $2
-  JAVA_HOME=$JAVA_DIR bgWithLog $1 $ITW_HEADLESS -Xnofork $3 # accepting certificate, accepting desktop icons, accepting missing permission attribute and one spare
-  resolveBg $PID $2
+  JAVA_HOME=$JAVA_DIR $1 $ITW_HEADLESS -Xclearcache  2>&1 | tee "$REPORT_DIR"/itwCache
+  beforeBg "$2"
+  JAVA_HOME=$JAVA_DIR bgWithLog "$1" $ITW_HEADLESS -Xnofork "$3" # accepting certificate, accepting desktop icons, accepting missing permission attribute and one spare
+  resolveBg "$PID" "$2"
 }
 
 
@@ -519,25 +534,26 @@ function installJMC_archive() {
 
 function runJmcFromDir() {
     beforeBg jmcFromDir
-    bgWithLog $JMC_DIR/bin/jmc  -vm  $JAVA_DIR/bin/java
-    resolveBg $PID jmcFromDir
+    bgWithLog $JMC_DIR/bin/jmc  -vm  "$JAVA_DIR"/bin/java
+    resolveBg "$PID" jmcFromDir
 }
 
 sclrepo="false"
 function el7SclRepo() {
-  local a=`mktemp`
+  # shellcheck disable=SC2155
+  local a=$(mktemp)
   echo "[rhel-7-server-rhscl-rpms-guisuite]
 name=RHSCL RPMS for RHEL 7 System
 baseurl=http://rhsm-pulp.corp.redhat.com/content/dist/rhel/server/7/\$releasever/\$basearch/rhscl/1/os/
 enabled=1
-gpgcheck=0" > $a
+gpgcheck=0" > "$a"
   REPOFILE=/etc/yum.repos.d/rhel-7-server-rhscl-rpms-guisuite.repo
-  sudo cp -v $a $REPOFILE
+  sudo cp -v "$a" $REPOFILE
   sclrepo="true"
 }
 
 function installJMC_bundled() {
-  #todo el7 - scl, el8,f32,f33 module, f34 - jsut jmc package, f35 dropped, el9 .. who knows
+  #todo el7 - scl, el8,f32,f33 module, f34 - just jmc package, f35 dropped, el9 .. who knows
   if [ "x$OTOOL_OS_NAME" = "xwin" ] ; then
     echo "windows have to install bundled jmc from msi"
     exit 1
@@ -567,12 +583,13 @@ function installJMC_bundled() {
 
 function runJmcOnPath() {
     beforeBg jmcOnPath
+    # shellcheck disable=SC2166
     if [ "x$OTOOL_OS_NAME" = "xel" -a "x$OTOOL_OS_VERSION" = "x7" ] ; then
-      bgWithLog scl enable rh-jmc -- jmc -vm $JAVA_DIR/bin/java
+      bgWithLog scl enable rh-jmc -- jmc -vm "$JAVA_DIR"/bin/java
     else
-      bgWithLog jmc -vm $JAVA_DIR/bin/java
+      bgWithLog jmc -vm "$JAVA_DIR"/bin/java
     fi
-    resolveBg $PID jmcOnPath
+    resolveBg "$PID" jmcOnPath
 }
 
 
@@ -612,7 +629,7 @@ function runIdea_archive() {
   # suffix-less should work also on windows
   export IDEA_JDK=$JAVA_DIR
   IDEA_JDK=$JAVA_DIR bgWithLog $IDEA_DIR/bin/idea.$suffix
-  resolveBg $PID idea
+  resolveBg "$PID" idea
 }
 
 NETBEANS_VERSION="12.3"
@@ -623,11 +640,12 @@ function installNetBeans_archive() {
   local archive="netbeans-$NETBEANS_VERSION-bin.zip"
   # we will need to cache this 400mb installer
   if [ ! -d netbeans ] ; then
+    # shellcheck disable=SC2166
     if [ ! -e "$archive" -a -e "/mnt/shared/jdk-images/apache/$archive" ] ; then
       cp "/mnt/shared/jdk-images/apache/$archive" "$PWD" || echo "local copy exists, but failed to copy"
    fi
     if [ ! -e "$archive" ] ; then
-      wget "https://archive.apache.org/dist/netbeans/netbeans/$NETBEANS_VERSION/$archive" #should be os-idependent
+      wget "https://archive.apache.org/dist/netbeans/netbeans/$NETBEANS_VERSION/$archive" #should be os-independent
    fi
    unzip "$archive"
  fi
@@ -636,18 +654,19 @@ function installNetBeans_archive() {
 function runNetBeans_archive() {
   beforeBg netbeans
   # suffix-less should work also on windows
-  bgWithLog netbeans/bin/netbeans --jdkhome $JAVA_DIR
-  resolveBg $PID netbeans
+  bgWithLog netbeans/bin/netbeans --jdkhome "$JAVA_DIR"
+  resolveBg "$PID" netbeans
 }
 
 
 function msiGui() {
   if [ "x$OTOOL_OS_NAME" = "xwin" ] ; then
     beforeBg msi
+    # shellcheck disable=SC2211
     rpms/*.msi
     resolveBg $! msi
   else
-    echo $SKIPPED_MSI_LINUX
+    echo "$SKIPPED_MSI_LINUX"
   fi
 }
 
@@ -655,7 +674,8 @@ function msiGui() {
 function assertSigningHeadlessDialogue() {
   if [ "x$ITW_HEADLESS" = "x--headless" ] ; then
      set +x # otherwise we are grepping ourselves form report
-     cat $REPORT_FILE | grep "digital signature"
+     # shellcheck disable=SC2002
+     cat "$REPORT_FILE" | grep "digital signature"
      set -x
   fi
 }
@@ -669,7 +689,7 @@ fi
 
 Eclipse_DIR="eclipse"
 Eclipse_ARCHIVE="eclipse-java-$Eclipse_DATE-R"
-Eclispe_URL="https://www.eclipse.org/downloads/download.php?file=/technology/epp/downloads/release/$Eclipse_DATE/R" #warning, tailing slashes counts
+Eclipse_URL="https://www.eclipse.org/downloads/download.php?file=/technology/epp/downloads/release/$Eclipse_DATE/R" #warning, tailing slashes counts
 function installEclipse_archive() {
   rm -rf $Eclipse_DIR #to debug with different versions of jdk
   if [ "x$OTOOL_OS_NAME" = "xwin" ] ; then
@@ -677,12 +697,13 @@ function installEclipse_archive() {
   else
     local archive="$Eclipse_ARCHIVE-linux-gtk-x86_64.tar.gz"
   fi
+  # shellcheck disable=SC2166
   if [ ! -e "$archive" -a -e "/mnt/shared/jdk-images/eclipse/$archive" ] ; then
       cp "/mnt/shared/jdk-images/eclipse/$archive" "$PWD" || echo "local copy not exists but failed to copy"
   fi
   if [ ! -d $Eclipse_DIR ] ; then
     if [ ! -e "$archive" ] ; then
-      wget "$Eclispe_URL/$archive" -O "$archive"
+      wget "$Eclipse_URL/$archive" -O "$archive"
     fi
     if [ "x$OTOOL_OS_NAME" = "xwin" ] ; then
       unzip "$archive"
@@ -701,8 +722,8 @@ function runEclipse_archive() {
   fi
   beforeBg eclipse
   # suffix-less should work also on windows
-  bgWithLog $Eclipse_DIR/eclipse"$suffix" -vm $JAVA_DIR/bin/java  -data $ECLIPSE_LOGS
-  resolveBg $PID eclipse
+  bgWithLog $Eclipse_DIR/eclipse"$suffix" -vm "$JAVA_DIR"/bin/java  -data "$ECLIPSE_LOGS"
+  resolveBg "$PID" eclipse
 }
 
 function bgWithLog() {
@@ -712,7 +733,7 @@ function bgWithLog() {
 YES
 YES
 YES
-" | "$@" 2>&1 & echo $! >&3 ) 3>pid | tee $REPORT_DIR/app  & # may read stdin!
+" | "$@" 2>&1 & echo $! >&3 ) 3>pid | tee "$REPORT_DIR"/app  & # may read stdin!
     sync #?
     PID=$(cat pid) ;   sync  ; rm -rf pid
 }
@@ -723,20 +744,20 @@ ECLIPSE_LOGS=$HOME/EclipseTmpWorkspace
 
 postpre_eclipse="false"
 function preEclipse() {
-  rm -rf $ECLIPSE_PLATFORM || true
-  mkdir $ECLIPSE_PLATFORM  || true
-  rm -rf $JMC_LOGS || true
-  mkdir $JMC_LOGS  || true
-  rm -rf $ECLIPSE_LOGS || true
-  mkdir $ECLIPSE_LOGS  || true
+  rm -rf "$ECLIPSE_PLATFORM" || true
+  mkdir "$ECLIPSE_PLATFORM"  || true
+  rm -rf "$JMC_LOGS" || true
+  mkdir "$JMC_LOGS"  || true
+  rm -rf "$ECLIPSE_LOGS" || true
+  mkdir "$ECLIPSE_LOGS"  || true
   postpre_eclipse="true"
 }
 
 function postEclipse() {
   if [ "x$postpre_eclipse" = "xtrue" ] ; then
-    cp -r  $ECLIPSE_PLATFORM/ "$REPORT_DIR/eclipse"  || true
-    cp -r  $JMC_LOGS/ "$REPORT_DIR/jmc"  || true
-    cp -r  $ECLIPSE_LOGS/ "$REPORT_DIR/eclipse-data"  || true
+    cp -r  "$ECLIPSE_PLATFORM"/ "$REPORT_DIR/eclipse"  || true
+    cp -r  "$JMC_LOGS"/ "$REPORT_DIR/jmc"  || true
+    cp -r  "$ECLIPSE_LOGS"/ "$REPORT_DIR/eclipse-data"  || true
   fi
 }
 

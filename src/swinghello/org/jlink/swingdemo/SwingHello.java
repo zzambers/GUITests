@@ -46,8 +46,8 @@ public class SwingHello {
     }
 
     public static void main(String... args) {
-        arg0=args[0];
-        System.out.println("arg: "+arg0);
+        arg0 = args[0];
+        System.out.println("arg: " + arg0);
         final Wiii w = new Wiii();
         SwingUtilities.invokeLater(() -> {
             w.setVisible(true);

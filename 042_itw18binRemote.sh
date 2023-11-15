@@ -19,5 +19,5 @@ parseArguments "$@"
 processArguments
 setup
 installIcedTeaWeb_18_binaryArchive
-runRemoteApp $ITW installIcedTeaWeb18binaryArchive 2>&1| tee "$REPORT_FILE"
+runRemoteApp "$ITW" installIcedTeaWeb18binaryArchive 2>&1| tee "$REPORT_FILE"
 assertSigningHeadlessDialogue  2>&1| tee -a "$REPORT_FILE"

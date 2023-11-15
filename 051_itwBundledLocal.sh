@@ -20,4 +20,4 @@ processArguments
 setup
 installIcedTeaWeb_bundled
 prepareLocalApp
-runITW  javaws bundledLocalApp $JNLP  2>&1| tee "$REPORT_FILE"
+runITW  javaws bundledLocalApp "$JNLP"  2>&1| tee "$REPORT_FILE"

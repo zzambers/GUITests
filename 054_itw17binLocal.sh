@@ -20,4 +20,4 @@ processArguments
 setup
 installIcedTeaWeb_17_binaryArchive
 prepareLocalApp
-runITW $ITW installIcedTeaWeb17binaryArchiveLocalApp $JNLP  2>&1| tee "$REPORT_FILE"
+runITW "$ITW" installIcedTeaWeb17binaryArchiveLocalApp "$JNLP"  2>&1| tee "$REPORT_FILE"

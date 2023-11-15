@@ -20,4 +20,4 @@ processArguments
 setup
 installIcedTeaWeb_17_portableArchive
 prepareLocalApp true
-runITW $ITW installIcedTeaWeb18portableArchiveLocalAppSigned $JNLP  2>&1| tee "$REPORT_FILE"
+runITW "$ITW" installIcedTeaWeb18portableArchiveLocalAppSigned "$JNLP"  2>&1| tee "$REPORT_FILE"
