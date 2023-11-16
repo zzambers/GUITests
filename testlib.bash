@@ -46,8 +46,7 @@ function skipOnModularJre() {
 
 DIFF="true"
 
-# shellcheck source=../tck/autoruns/common.sh
-source "${LIB_SCRIPT_DIR}/../tck/autoruns/common.sh"
+source "${LIB_SCRIPT_DIR}/common.sh"
 
 parseArguments() {
   for a in "$@"
