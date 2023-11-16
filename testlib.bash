@@ -46,7 +46,7 @@ function skipOnModularJre() {
 
 DIFF="true"
 
-source "${LIB_SCRIPT_DIR}/common.sh"
+source "${LIB_SCRIPT_DIR}/common.bash"
 
 parseArguments() {
   for a in "$@"
