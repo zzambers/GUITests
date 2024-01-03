@@ -1,0 +1,38 @@
+on:
+  pull_request:
+    branches:
+      - "*"
+  push:
+    branches:
+      - "*"
+
+jobs:
+  test:
+    name: "Linux"
+    runs-on: "ubuntu-latest"
+    strategy:
+      fail-fast: false
+      matrix:
+        jdkconf:
+          - JDK 8
+          - JDK 11
+          - JDK 17
+          - JDK 21
+        include:
+          - jdkconf: JDK 8
+            jdkver: "8"
+          - jdkconf: JDK 11
+            jdkver: "11"
+          - jdkconf: JDK 17
+            jdkver: "17"
+          - jdkconf: JDK 21
+            jdkver: "21"
+    steps:
+      - uses: actions/checkout@v3
+        - name: Set up JDK
+          uses: actions/setup-java@v3
+          with:
+            distribution: 'temurin'
+            java-version: ${{ matrix.jdkver || env.jdkver_latest }}
+        - name: Run
+          run: java -version
