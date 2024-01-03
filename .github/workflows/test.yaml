@@ -35,3 +35,4 @@ jobs:
           distribution: 'temurin'
           java-version: ${{ matrix.jdkver || env.jdkver_latest }}
       - name: Run
+        run: java -version
