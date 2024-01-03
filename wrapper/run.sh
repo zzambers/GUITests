@@ -21,9 +21,15 @@ git clone https://github.com/rh-openjdk/run-folder-as-tests.git ${rft} 1>&2
 ls -l ${rft}  1>&2
 echo ${rft}
 
-# get tested binaries
-WORKSPACE=
-SCRATCH_DISK
+# detect runtime environment
+# true if running in GitHub Actions, false otherwise
+export GITHUB_ACTIONS="${GITHUB_ACTIONS:-false}"
+
+source "$SCRIPT_DIR"/configure-runtime-environment-settings.sh
+setupRuntimeSpecifics $SCRIPT_DIR
+
+echo $TESTS_FOLDER
+echo $BINARY_FOLDER
 
 # run tests
-bash $rft/run-folder-as-tests.sh /mnt/shared/testsuites/GUITests
+bash $rft/run-folder-as-tests.sh $TESTS_FOLDER $BINARY_FOLDER
