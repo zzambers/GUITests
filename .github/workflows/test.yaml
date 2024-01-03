@@ -29,10 +29,10 @@ jobs:
             jdkver: "21"
     steps:
       - uses: actions/checkout@v3
-        - name: Set up JDK
-          uses: actions/setup-java@v3
-          with:
-            distribution: 'temurin'
-            java-version: ${{ matrix.jdkver || env.jdkver_latest }}
-        - name: Run
-          run: java -version
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: ${{ matrix.jdkver || env.jdkver_latest }}
+      - name: Run
+        run: java -version
