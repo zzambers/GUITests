@@ -38,9 +38,6 @@ jobs:
         run: java -version
       - name: Download tested binaries
         run: |
-          pwd
-          mkdir input
-          wget -p "./input" https://api.adoptium.net/v3/binary/latest/${{ matrix.jdkver }}/ga/linux/x64/jdk/hotspot/normal/eclipse
-          pwd
+          whereis java
           ls -la
 
