@@ -36,8 +36,9 @@ jobs:
           java-version: ${{ matrix.jdkver || env.jdkver_latest }}
       - name: Run
         run: java -version
-      - name: Download tested binaries
+      - name: Run tests
         run: |
-          whereis java
-          ls -la
+          cd wrapper
+          ls
+          
 
