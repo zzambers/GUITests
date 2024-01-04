@@ -38,7 +38,7 @@ jobs:
         run: java -version
       - name: Run tests
         run: |
-          ls wrapper
+          cd wrapper
           export BINARY_FOLDER=/usr/bin/java
           ./run.sh
           
