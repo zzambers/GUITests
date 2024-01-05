@@ -36,10 +36,10 @@ jobs:
           java-version: ${{ matrix.jdkver || env.jdkver_latest }}
       - name: Run
         run: java -version
-      - name: Download tested binaries
-        run:
-          wget -O "input" https://api.adoptium.net/v3/binary/latest/${{ matrix.jdkver }}/ga/linux/x64/jdk/hotspot/normal/eclipse
-          cd input
-          pwd
-          ls -la
+      - name: Run tests
+        run: |
+          cd wrapper
+          export BINARY_FOLDER=/usr/bin/java
+          ./run.sh
+          
 
