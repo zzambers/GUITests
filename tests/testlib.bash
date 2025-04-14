@@ -295,7 +295,7 @@ function installIcedTeaWeb_17_portableArchive() {
   # shellcheck disable=SC2209
   ITW=unset
   if [ ! -e $ITW_17.portable.bin.zip ] ; then
-    wget http://icedtea.wildebeest.org/download/icedtea-web-binaries/1.7.2/$ITW_17.portable.bin.zip
+    wget http://icedtea.classpath.org/download/icedtea-web-binaries/1.7.2/$ITW_17.portable.bin.zip
   fi
   unzip $ITW_17.portable.bin.zip
   if [ "x$OTOOL_OS_NAME" = "xwin" ] ; then
@@ -317,13 +317,13 @@ function installIcedTeaWeb_17_binaryArchive() {
   ITW=unset
   if [ "x$OTOOL_OS_NAME" = "xwin" ] ; then
     if [ ! -e $ITW_17.win.bin.zip ] ; then
-      wget http://icedtea.wildebeest.org/download/icedtea-web-binaries/1.7.2/windows/$ITW_17.win.bin.zip
+      wget http://icedtea.classpath.org/download/icedtea-web-binaries/1.7.2/windows/$ITW_17.win.bin.zip
     fi
     unzip $ITW_17.win.bin.zip
     ITW=$PWD/$ITW_DIR/bin/javaws.bat
   else
     if [ ! -e $ITW_17.linux.bin.zip ] ; then
-      wget http://icedtea.wildebeest.org/download/icedtea-web-binaries/1.7.2/linux/$ITW_17.linux.bin.zip
+      wget http://icedtea.classpath.org/download/icedtea-web-binaries/1.7.2/linux/$ITW_17.linux.bin.zip
     fi
     unzip $ITW_17.linux.bin.zip
     ITW=$PWD/$ITW_DIR/bin/javaws.sh
