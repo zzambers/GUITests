@@ -27,7 +27,7 @@ SKIPPED_MSI_LINUX="!skipped! no testing of msi on linux !skipped!"
 SKIPPED_itw_jdk16="!skipped! itw 1.7 seems to support jdk11 but is.. well old !skipped!"
 SKIPPED_jdk_needed="!skipped! this test requires jdk, you are most likely on jre(-headless) !skipped!"
 SKIPPED_jdk11_sdk="!skipped! On JDK11+, netbeans requires JDK, this looks to be JRE !skipped!"
-SKIPPED_jmc_decom_fedora="!skipped! jmc is no longer packed for fedora !skipped!"
+SKIPPED_jmc_decom="!skipped! jmc is no longer packed for fedora and el10 !skipped!"
 SKIPPED_el9="!skipped! no op on el9 !skipped!"
 SKIPPED_no_RH="!skipped! requires Red Hat distro !skipped!"
 
