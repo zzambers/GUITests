@@ -29,6 +29,7 @@ SKIPPED_jdk_needed="!skipped! this test requires jdk, you are most likely on jre
 SKIPPED_jdk11_sdk="!skipped! On JDK11+, netbeans requires JDK, this looks to be JRE !skipped!"
 SKIPPED_jmc_decom_fedora="!skipped! jmc is no longer packed for fedora !skipped!"
 SKIPPED_el9="!skipped! no op on el9 !skipped!"
+SKIPPED_no_RH="!skipped! requires Red Hat distro !skipped!"
 
 function skipOnModularJre() {
   if [  "x$OTOOL_JDK_VERSION" == "x" ]  ; then
@@ -113,6 +114,10 @@ HeredocDelimiter
       export DISPLAY="$futureVnc"
     fi
   fi
+}
+
+function isRedHatDistro() {
+  type rpm > /dev/null 2>&1 && [ -e "/etc/redhat-release" ]
 }
 
 function dnfyum() {
