@@ -33,3 +33,5 @@ echo $BINARY_FOLDER
 
 # run tests
 bash $rft/run-folder-as-tests.sh $TESTS_FOLDER $BINARY_FOLDER
+# check for failures in GHA
+[ "x${GITHUB_ACTIONS}" = "xtrue" ] && grep "rhqa.failed=0" "${WORKSPACE}"/results/results.properties

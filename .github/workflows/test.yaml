@@ -10,6 +10,7 @@ jobs:
   test:
     name: "Linux"
     runs-on: "ubuntu-latest"
+    container: quay.io/centos/centos:stream9
     strategy:
       fail-fast: false
       matrix:
@@ -28,7 +29,13 @@ jobs:
           - jdkconf: JDK 21
             jdkver: "21"
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Install dependencies
+        run: |
+          dnf -y config-manager --set-enabled crb
+          dnf -y install "https://dl.fedoraproject.org/pub/epel/epel-release-latest-9.noarch.rpm"
+          dnf -y install  alsa-lib cups fontconfig git ImageMagick javapackages-filesystem libX11 libXcomposite libXext libXi libXrender libXtst procps sudo tar unzip wget which xauth xorg-x11-fonts-Type1 xorg-x11-server-Xvfb
       - name: Set up JDK
         uses: actions/setup-java@v3
         with:
@@ -38,8 +45,14 @@ jobs:
         run: java -version
       - name: Run tests
         run: |
+          Xvfb :1 &
+          sleep 10
           cd wrapper
-          export BINARY_FOLDER=/usr/bin/java
+          export BINARY_FOLDER="${JAVA_HOME}"
+          export DISPLAY=:1
+          export OTOOL_jresdk=sdk
+          export OTOOL_JDK_VERSION=${{ matrix.jdkver }}
+          export OTOOL_OS_NAME=el
+          export OTOOL_OS_VERSION=9
           ./run.sh
-          
-
+          kill $! # kill Xvfb
