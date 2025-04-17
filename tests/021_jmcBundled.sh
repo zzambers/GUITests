@@ -15,6 +15,11 @@ readonly SCRIPT_DIR="$( cd -P "$( dirname "$SCRIPT_SOURCE" )" && pwd )"
 
 source "$SCRIPT_DIR/testlib.bash"
 
+if ! isRedHatDistro ; then
+  echo "$SKIPPED_no_RH"
+  exit 0
+fi
+
 if [ "$OTOOL_OS_VERSION" -ge "35" ] ; then
   echo "$SKIPPED_jmc_decom_fedora"
   exit 0

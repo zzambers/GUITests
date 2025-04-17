@@ -9,7 +9,7 @@ on:
 jobs:
   test:
     name: "Linux"
-    runs-on: "ubuntu-latest"
+    runs-on: "ubuntu-24.04"
     strategy:
       fail-fast: false
       matrix:
@@ -28,18 +28,45 @@ jobs:
           - jdkconf: JDK 21
             jdkver: "21"
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install imagemagick xvfb
       - name: Set up JDK
         uses: actions/setup-java@v3
         with:
           distribution: 'temurin'
-          java-version: ${{ matrix.jdkver || env.jdkver_latest }}
+          java-version: ${{ matrix.jdkver }}
       - name: Run
         run: java -version
       - name: Run tests
         run: |
-          cd wrapper
-          export BINARY_FOLDER=/usr/bin/java
-          ./run.sh
-          
-
+          mkdir -p workspace
+          Xvfb :1 &
+          XVFB_PID=$!
+          sleep 10
+          export BINARY_FOLDER="${JAVA_HOME}"
+          export DISPLAY=:1
+          export OTOOL_JDK_VERSION=${{ matrix.jdkver }}
+          export OTOOL_jresdk=sdk
+          export OTOOL_OS_NAME=ubuntu
+          export OTOOL_OS_VERSION=2404
+          export TTL=60 # set TTL not to do manual run
+          export WORKSPACE="${PWD}/workspace"
+          ./wrapper/run.sh
+          kill $XVFB_PID
+      - name: Check results
+        run: |
+          cat workspace/results/results.txt
+          grep '^rhqa.failed=0$' workspace/results/results.properties
+      - name: Pack results
+        run: |
+          tar -czf results.tar.gz -C workspace results
+      - name: Upload results
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: guitests-jdk${{ matrix.jdkver}}
+          path: "results.tar.gz"
