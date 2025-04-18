@@ -20,8 +20,9 @@ if ! isRedHatDistro ; then
   exit 0
 fi
 
-if [ "$OTOOL_OS_VERSION" -ge "35" ] ; then
-  echo "$SKIPPED_jmc_decom_fedora"
+if [ "x$OTOOL_OS_NAME" = "xf" -a "$OTOOL_OS_VERSION" -ge "35" ] \
+|| [ "x$OTOOL_OS_NAME" = "xel" -a "$OTOOL_OS_VERSION" -ge "10" ] ; then
+  echo "$SKIPPED_jmc_decom"
   exit 0
 fi
 
