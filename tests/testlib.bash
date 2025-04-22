@@ -281,7 +281,7 @@ function compareImagesSilently() {
   echo "40+ same, 10- different" 1>&2
   # shellcheck disable=SC2155
   # shellcheck disable=SC2002
-  local diff=$(cat "$REPORT_DIR"/res-"$idCompOverride" | sed "s;\\..*;;")
+  local diff=$(cat "$REPORT_DIR"/res-"$idCompOverride" | sed "s;[. ].*;;")
   if [ "$diff" == "inf" ] ; then
     local diff=50 #same
   fi
