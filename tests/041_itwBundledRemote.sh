@@ -19,6 +19,10 @@ if ! isRedHatDistro ; then
   echo "$SKIPPED_no_RH"
   exit 0
 fi
+if [  "$OTOOL_JDK_VERSION" -lt 11 ]  ; then
+  echo "$SKIPPED_itw_remote_jdk11"
+  exit 0
+fi
 
 parseArguments "$@"
 processArguments

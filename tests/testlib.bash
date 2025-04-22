@@ -30,6 +30,7 @@ SKIPPED_jdk11_sdk="!skipped! On JDK11+, netbeans requires JDK, this looks to be 
 SKIPPED_jmc_decom="!skipped! jmc is no longer packed for fedora and el10 !skipped!"
 SKIPPED_el9="!skipped! no op on el9 !skipped!"
 SKIPPED_no_RH="!skipped! requires Red Hat distro !skipped!"
+SKIPPED_itw_remote_jdk11="!skipped! itw remote tests require jdk11+ !skipped!"
 
 function skipOnModularJre() {
   if [  "x$OTOOL_JDK_VERSION" == "x" ]  ; then

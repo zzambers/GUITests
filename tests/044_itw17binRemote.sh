@@ -15,6 +15,11 @@ readonly SCRIPT_DIR="$( cd -P "$( dirname "$SCRIPT_SOURCE" )" && pwd )"
 
 source "$SCRIPT_DIR/testlib.bash"
 
+if [  "$OTOOL_JDK_VERSION" -lt 11 ]  ; then
+  echo "$SKIPPED_itw_remote_jdk11"
+  exit 0
+fi
+
 parseArguments "$@"
 processArguments
 setup
