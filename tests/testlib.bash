@@ -496,6 +496,11 @@ function runRemoteApp() {
   # runITW $1 $2 https://www.sweethome3d.com/SweetHome3D.jnlp
   # packgz error solemn for 1.8 toto, check rhel rpms
   # runITW $1 $2 https://phetsims.colorado.edu/sims/circuit-construction-kit/circuit-construction-kit-dc_en.jnlp
+  if [  "$OTOOL_JDK_VERSION" -lt 11 ]  ; then
+    # current version is 11+, use archived version for 8
+    runITW "$1" "$2"  https://web.archive.org/web/20240309172206/https://josm.openstreetmap.de/download/josm.jnlp
+    return
+  fi
   runITW "$1" "$2"  https://josm.openstreetmap.de/download/josm.jnlp
 }
 
