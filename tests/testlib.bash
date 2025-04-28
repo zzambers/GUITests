@@ -493,10 +493,10 @@ function runRemoteAppFromPath() {
 
 function runRemoteApp() {
   # todo fix SweetHome, was always working!
-  # runITW $1 $2 https://www.sweethome3d.com/SweetHome3D.jnlp
+  runITW $1 $2 https://www.sweethome3d.com/SweetHome3D.jnlp
   # packgz error solemn for 1.8 toto, check rhel rpms
   # runITW $1 $2 https://phetsims.colorado.edu/sims/circuit-construction-kit/circuit-construction-kit-dc_en.jnlp
-  runITW "$1" "$2"  https://josm.openstreetmap.de/download/josm.jnlp
+  # runITW "$1" "$2"  https://josm.openstreetmap.de/download/josm.jnlp
 }
 
 
