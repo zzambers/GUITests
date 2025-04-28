@@ -282,6 +282,12 @@ function compareImagesSilently() {
   # shellcheck disable=SC2155
   # shellcheck disable=SC2002
   local diff=$(cat "$REPORT_DIR"/res-"$idCompOverride" | sed "s;[. ].*;;")
+  # behavior of psnr has changed, zero is now reported instead of "inf":
+  # https://www.imagemagick.org/discourse-server/viewtopic.php?t=31487
+  # distinguish "inf" case using AE metric to emulate previous behavior
+  if [ "$diff" -eq 0 ] && compare -metric AE "$REPORT_DIR"/"$name"-"$id1".png "$REPORT_DIR"/"$name"-"$id2".png null: 2>&1 | grep -q '^0' ; then
+    diff="inf"
+  fi
   if [ "$diff" == "inf" ] ; then
     local diff=50 #same
   fi
