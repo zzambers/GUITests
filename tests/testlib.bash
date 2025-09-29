@@ -206,7 +206,7 @@ function beforeBg() {
   if [ "x$TTL" = "x" -o "x$TTL" = "x0"  ] ; then
     echo "manual mode!"
   else
-    import  -window root "$REPORT_DIR"/diff-01.png
+    import  -window root "png24:$REPORT_DIR"/diff-01.png
   fi
 }
 
@@ -245,15 +245,15 @@ function resolveBg() {
       d12=$(compareImagesSilently $cname 01 02)
       d23=$(compareImagesSilently $cname 02 03)
       d13=$(compareImagesSilently $cname 01 03 03-01)
-      if [ "$d12" -gt 15 ] ; then
-        echo "error! images 1+2 are same, should be not"
+      if [ "$d12" -lt 1 ] ; then
+        echo "error! images 1+2 are same (or too similar), should be not"
         exit 1
       fi
-      if [ "$d23" -gt 15 ] ; then
-        echo "error! images 2+3 are same, should be not"
+      if [ "$d23" -lt 1 ] ; then
+        echo "error! images 2+3 are same (or too similar), should be not"
         exit 1
       fi
-      if [ "$d13" -le 15 ] ; then
+      if [ "$d13" -gt 0 ] ; then
         echo "warning! images 1+3 are different, should be not"
         # exit 1 # The difference between first and last stage is probably not relevant, and may cause false-negatives
       fi
@@ -277,14 +277,17 @@ function compareImagesSilently() {
   if [ "x$idCompOverride" == "x" ] ; then
     idCompOverride=$id1-$id2
   fi
-  compare  -metric PSNR  "$REPORT_DIR"/"$name"-"$id1".png "$REPORT_DIR"/"$name"-"$id2".png "$REPORT_DIR"/"$name"-"$idCompOverride".png  2> "$REPORT_DIR"/res-"$idCompOverride" || r=$?
-  echo "40+ same, 10- different" 1>&2
+  compare  -metric AE  "$REPORT_DIR"/"$name"-"$id1".png "$REPORT_DIR"/"$name"-"$id2".png "$REPORT_DIR"/"$name"-"$idCompOverride".png  2> "$REPORT_DIR"/res-"$idCompOverride" || r=$?
   # shellcheck disable=SC2155
   # shellcheck disable=SC2002
-  local diff=$(cat "$REPORT_DIR"/res-"$idCompOverride" | sed "s;[. ].*;;")
-  if [ "$diff" == "inf" ] ; then
-    local diff=50 #same
-  fi
+  # total pixels in image
+  local pxTotal="$( identify -format "%[fx:w*h]" "$REPORT_DIR"/res-"$idCompOverride" )"
+  # different pixels
+  local pxDiff="$( cat "$REPORT_DIR"/res-"$idCompOverride" )"
+  pxDiff="${pxDiff##*[(]}"
+  pxDiff="${pxDiff%%[)]*}"
+  # percent of different pixels (rounded down)
+  local diff="$(( 100 * pxDiff / pxTotal ))"
   echo $diff
 }
 
