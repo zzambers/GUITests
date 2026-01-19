@@ -564,15 +564,7 @@ function runJmcFromDir() {
 
 sclrepo="false"
 function el7SclRepo() {
-  # shellcheck disable=SC2155
-  local a=$(mktemp)
-  echo "[rhel-7-server-rhscl-rpms-guisuite]
-name=RHSCL RPMS for RHEL 7 System
-baseurl=http://rhsm-pulp.corp.redhat.com/content/dist/rhel/server/7/\$releasever/\$basearch/rhscl/1/os/
-enabled=1
-gpgcheck=0" > "$a"
-  REPOFILE=/etc/yum.repos.d/rhel-7-server-rhscl-rpms-guisuite.repo
-  sudo cp -v "$a" $REPOFILE
+  sudo sed -i 's;^enabled=0;enabled=1;g' /etc/yum.repos.d/rhel-7-server-rhscl-rpms.repo
   sclrepo="true"
 }
 
@@ -801,6 +793,6 @@ function allTraps() {
     $LOCAL_VNC -kill $futureVnc || true
   fi
   if [ "x$sclrepo" = "xtrue" ] ; then
-    sudo rm -fv $REPOFILE
+    sudo sed -i 's;^enabled=1;enabled=0;g' /etc/yum.repos.d/rhel-7-server-rhscl-rpms.repo
   fi
 }
