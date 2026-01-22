@@ -702,9 +702,9 @@ function assertSigningHeadlessDialogue() {
 
 
 if [  "0$OTOOL_JDK_VERSION" -gt "8" ]  ; then
-    Eclipse_DATE=2020-09
+    Eclipse_DATE=2020-09  #this one works 11-25, in case a newer one will be needed, I using 2020-06 or 8-25, and use newer to solve issue
 else
-    Eclipse_DATE=2020-06
+    Eclipse_DATE=2020-06 #this is last version for jdk8, howeever looks like ok also for newer onse, including 25
 fi
 
 Eclipse_DIR="eclipse"
