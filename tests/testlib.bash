@@ -704,7 +704,7 @@ function assertSigningHeadlessDialogue() {
 if [  "0$OTOOL_JDK_VERSION" -gt "8" ]  ; then
     Eclipse_DATE=2020-09
 else
-    Eclipse_DATE=2019-12
+    Eclipse_DATE=2020-06
 fi
 
 Eclipse_DIR="eclipse"
