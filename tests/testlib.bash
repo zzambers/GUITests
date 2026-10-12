@@ -31,6 +31,7 @@ SKIPPED_jmc_decom="!skipped! jmc is no longer packed for fedora and el10 !skippe
 SKIPPED_el9="!skipped! no op on el9 !skipped!"
 SKIPPED_no_RH="!skipped! requires Red Hat distro !skipped!"
 SKIPPED_no_ITWREMOTE="!skipped! All ITW remote tests have been disabled - javaws apps are disapearing !skipped!"
+SKIPPED_no_x86_64="!skipped! requires x86_64 architecture !skipped!"
 
 function skipOnModularJre() {
   if [  "x$OTOOL_JDK_VERSION" == "x" ]  ; then
@@ -123,6 +124,10 @@ function isRedHatDistro() {
 
 function isItwRemoteDisabled() {
   [ ! "x$ITW_REMOTE" == "xtrue" ] 
+}
+
+function isX86_64() {
+  [ "$( uname -m )" = "x86_64" ]
 }
 
 function dnfyum() {

@@ -26,6 +26,11 @@ if [ "x$OTOOL_OS_NAME" = "xf" -a "$OTOOL_OS_VERSION" -ge "35" ] \
   exit 0
 fi
 
+if ! isX86_64 ; then
+  echo "$SKIPPED_no_x86_64"
+  exit 0
+fi
+
 preEclipse
 parseArguments "$@"
 processArguments

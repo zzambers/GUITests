@@ -15,6 +15,11 @@ readonly SCRIPT_DIR="$( cd -P "$( dirname "$SCRIPT_SOURCE" )" && pwd )"
 
 source "$SCRIPT_DIR/testlib.bash"
 
+if ! isX86_64 ; then
+  echo "$SKIPPED_no_x86_64"
+  exit 0
+fi
+
 parseArguments "$@"
 processArguments
 setup
